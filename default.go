@@ -10,9 +10,16 @@ struct blad struct {
   disabledRoute func(http.ResponseWriter, *http.Request)
 }
 
+func dropConnection(w http.ResponseWriter, r *http.Request) {
+  // Need to figure out how best to drop the connection without leaking information
+}
+
 // NewDefaultSwitch returns a black switch object that can be used with any expressions that result in a bool
 func NewDefaultSwitch() Switch {
-  return &blad{}
+  return &blad{
+    enabledRoute: dropConnection,
+    disabledRoute: dropConnection,
+  }
 }
 
 func (b *blad) When(f func(*http.Request)bool) Switch {
@@ -31,14 +38,6 @@ func (b *blad) DisabledRoute(f func(http.ResponseWriter, *http.Request)) Switch 
 }
 
 func (b *blad) Route() (func(http.ResponseWriter, *http.Request)) {
-  // I don't like this panic but I need a better way to handle it.
-  // Potentially might be worth to default to dropping the connection if the route isn't defined
-  if b.enabledRoute == nil {
-    panic("No enabled route set")
-  }
-  if b.disabledRoute == nil {
-    panic("No disabled route set")
-  }
   return func(w http.ResponseWriter,r *http.Request) {
     for _, cond := range b.conditions {
       if !cond(r) {
