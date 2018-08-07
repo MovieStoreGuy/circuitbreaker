@@ -11,7 +11,7 @@ type blad struct {
 }
 
 func dropConnection(w http.ResponseWriter, r *http.Request) {
-	// Need to figure out how best to drop the connection without leaking information
+	r.Body.Close()
 }
 
 // NewDefaultSwitch returns a black switch object that can be used with any expressions that result in a bool
@@ -22,7 +22,7 @@ func NewDefaultSwitch() Switch {
 	}
 }
 
-func (b *blad) CloseRouteWhen(f func(*http.Request) bool) Switch {
+func (b *blad) Enable(f func(*http.Request) bool) Switch {
 	b.conditions = append(b.conditions, f)
 	return b
 }
@@ -38,10 +38,12 @@ func (b *blad) DisabledRoute(f func(http.ResponseWriter, *http.Request)) Switch 
 }
 
 func (b *blad) Route() func(http.ResponseWriter, *http.Request) {
+	// Potential spot for extra functional fun
 	return func(w http.ResponseWriter, r *http.Request) {
 		for _, cond := range b.conditions {
 			if !cond(r) {
 				b.disabledRoute(w, r)
+				return
 			}
 		}
 		b.enabledRoute(w, r)
