@@ -8,7 +8,7 @@ import (
 type Switch interface {
 	// When is the generic function that will deterime if the route is accessible at this point in time.
 	// The reason for passing a function that returns a bool is so that routes can be reenabled at runtime.
-	Enable(func(*http.Request) bool) Switch
+	Open(func(*http.Request) bool) Switch
 
 	// EnabledRoute is the http route used if the switch is enabled
 	EnabledRoute(func(http.ResponseWriter, *http.Request)) Switch
